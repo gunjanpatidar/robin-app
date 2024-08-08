@@ -1,17 +1,75 @@
-import { Link, Stack, useRouter } from 'expo-router';
-import React from 'react';
+/* eslint-disable max-lines-per-function */
+import { Link, router, Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Button, Colors, Text, View } from 'react-native-ui-lib';
+import { Button, Colors, Incubator, Text, View } from 'react-native-ui-lib';
 
 import FacebookLogo from '@/../assets/icons/facebook_logo.svg';
 import GoogleLogo from '@/../assets/icons/google_logo.svg';
+import type { LoginRequest } from '@/api/auth/use-login';
+import { useLogin } from '@/api/auth/use-login';
 import RHA from '@/components';
-import { HeaderWithLogo } from '@/components/ui/header-with-logo';
 import { useAuth } from '@/core';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const signIn = useAuth.use.signIn();
+
+  const [state, setState] = useState<LoginRequest>({
+    email_id: '',
+    password: '',
+  });
+
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    message: string;
+    type: Incubator.ToastPresets | 'success' | 'failure';
+  }>({
+    visible: false,
+    message: '',
+    type: 'failure',
+  });
+
+  const {
+    mutate: login,
+    isPending: isLoginRequestPending,
+    error: errorLogin,
+    data: loginResponse,
+  } = useLogin();
+
+  const onSubmit = () => {
+    login(state);
+  };
+
+  useEffect(() => {
+    let msg = loginResponse?.status.message;
+
+    if (errorLogin) {
+      console.log('error:', errorLogin, msg);
+
+      setToast({
+        visible: true,
+        message: msg || 'Something went wrong, please try again',
+        type: 'failure',
+      });
+    }
+  }, [errorLogin, loginResponse]);
+
+  useEffect(() => {
+    if (loginResponse) {
+      if (loginResponse.status.success) {
+        signIn({ token: loginResponse.token });
+        router.push('/');
+      } else {
+        setToast({
+          visible: true,
+          message:
+            loginResponse.status.message ||
+            'Something went wrong, please try again',
+          type: 'failure',
+        });
+      }
+    }
+  }, [loginResponse, signIn]);
 
   return (
     <>
@@ -23,13 +81,44 @@ export default function LoginScreen() {
         }}
       />
 
-      <HeaderWithLogo />
+      <Incubator.Toast
+        visible={toast.visible}
+        message={toast.message}
+        position={'top'}
+        preset={toast.type}
+        backgroundColor={Colors.red70}
+        autoDismiss={10000}
+        action={{
+          label: 'Dismiss',
+          onPress: () => {
+            setToast({ ...toast, visible: false });
+          },
+        }}
+        onDismiss={() => {
+          setToast({ ...toast, visible: false });
+        }}
+      />
+
+      <RHA.UI.Overlay
+        visible={isLoginRequestPending}
+        type="loading"
+        message={'Signin up...'}
+        messageStyle={{ color: Colors.white }}
+        containerStyle={{ backgroundColor: Colors.rgba(Colors.grey_3, 0.9) }}
+      />
+
+      <RHA.UI.HeaderWithLogo />
 
       <View style={{ marginHorizontal: 24, alignItems: 'center' }}>
         <RHA.Type.H1>Login</RHA.Type.H1>
 
-        <RHA.Form.EmailInput />
-        <RHA.Form.PasswordInput />
+        <RHA.Form.EmailInput
+          onChangeText={(text) => setState({ ...state, email_id: text })}
+        />
+        <RHA.Form.PasswordInput
+          minLength={0}
+          onChangeText={(text) => setState({ ...state, password: text })}
+        />
 
         <Link
           href="/auth/reset-password"
@@ -38,25 +127,14 @@ export default function LoginScreen() {
           Forgot Password?
         </Link>
 
-        <Button
+        <RHA.Form.Button
           label="Login"
           iconOnRight
-          iconSource={ArrowRightIcon}
-          iconStyle={{}}
-          labelStyle={{
-            marginRight: 16,
-            fontFamily: 'poppinsSemiBold',
-            fontWeight: 'bold',
-          }}
-          backgroundColor={Colors.rhaGreen}
-          // size={Button.sizes.large}
-          borderRadius={8}
-          marginT-24
-          style={{ height: 56, alignSelf: 'stretch' }}
-          onPress={() => {
-            signIn({ access: 'access-token', refresh: 'refresh-token' });
-            router.push('/');
-          }}
+          iconSource={RHA.Icons.render(RHA.Icons.ArrowRight, {
+            stroke: Colors.white,
+          })}
+          style={{ marginTop: 24, alignSelf: 'stretch' }}
+          onPress={onSubmit}
         />
 
         <Text marginV-24 style={{ color: Colors.grey_2 }}>
@@ -98,10 +176,6 @@ export default function LoginScreen() {
       </View>
     </>
   );
-}
-
-function ArrowRightIcon() {
-  return <RHA.Icons.ArrowRight width={8} translateY={1} fill={Colors.white} />;
 }
 
 function GoogleLogoIcon() {

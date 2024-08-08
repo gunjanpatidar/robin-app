@@ -18,6 +18,7 @@ export type ButtonPropTypes = {
     | ((iconStyle?: StyleProp<ImageStyle>[] | undefined) => JSX.Element);
   style?: StyleProp<ViewStyle | Animated.AnimatedProps<ViewStyle>>;
   labelStyle?: StyleProp<TextStyle>;
+  disabled?: boolean;
   props?: ButtonProps;
 };
 
@@ -30,7 +31,8 @@ export const Button = ({
   iconOnRight,
   style,
   labelStyle,
-  ...props
+  disabled,
+  props,
 }: ButtonPropTypes) => {
   return (
     <RNUIButton
@@ -44,6 +46,7 @@ export const Button = ({
       borderRadius={8}
       style={[styles.buttonStyle, style]}
       onPress={onPress}
+      disabled={disabled}
     />
   );
 };

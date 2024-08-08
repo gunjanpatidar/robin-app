@@ -8,6 +8,7 @@ import { Button } from '../form/button';
 import { Lottie } from '../lottie';
 
 export function Overlay({
+  visible,
   message,
   messageStyle,
   showButton = false,
@@ -16,6 +17,7 @@ export function Overlay({
   type,
   containerStyle,
 }: {
+  visible?: boolean;
   message: string;
   messageStyle?: TextStyle;
   showButton?: boolean;
@@ -24,6 +26,10 @@ export function Overlay({
   type: 'success' | 'loading' | 'error';
   containerStyle?: ViewStyle;
 }) {
+  if (!visible) {
+    return null;
+  }
+
   return (
     <View style={{ ...styles.container, ...containerStyle }}>
       <LottieView
