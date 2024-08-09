@@ -144,7 +144,7 @@ export default function SignupScreen() {
       <RHA.UI.Overlay
         visible={isSignupRequestPending}
         type="loading"
-        message={'Signin up...'}
+        message={'Signing up...'}
         messageStyle={{ color: Colors.white }}
         containerStyle={{ backgroundColor: Colors.rgba(Colors.grey_3, 0.9) }}
       />

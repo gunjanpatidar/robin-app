@@ -11,7 +11,6 @@ import { Text } from '@/ui';
 const IMAGES = [
   'https://images.moneycontrol.com/static-mcnews/2017/04/Robin-Hood-Army-770x428.jpg?impolicy=website&width=770&height=431',
   'https://indiaeducationdiary.in/wp-content/uploads/2021/08/Pic-2.jpg',
-  'https://thesmetimes.com/wp-content/uploads/2020/07/Robin-Hood-Army_1.jpg',
 ];
 
 export default function Onboarding() {
@@ -81,8 +80,8 @@ export default function Onboarding() {
               lineHeight: 24,
             }}
           >
-            This is your oppotunoty to be the change! Join thousands of Robins
-            in helping to improve someone's life.
+            This is your opportunity to be the change! Join thousands of Robins
+            in helping improve someone's life.
           </Text>
         </View>
         {/* <Button label="Skip" link linkColor={Colors.grey_2} /> */}

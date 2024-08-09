@@ -1,7 +1,6 @@
-/* eslint-disable max-lines-per-function */
 /* eslint-disable react/no-unstable-nested-components */
 import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Colors, Text } from 'react-native-ui-lib';
 
 import type { City } from '@/api';
@@ -12,10 +11,11 @@ import { getItem, setItem } from '@/core/storage';
 import { Settings as SettingsIcon } from '@/ui/icons';
 
 export default function TabLayout() {
-  const status = useAuth.use.status();
-  const [citiesLoaded, setCitiesLoaded] = useState(false);
-
+  const authStatus = useAuth.use.status();
+  const [isFirstTime] = useIsFirstTime();
   const storedCities = getItem<City[]>('global.cities');
+
+  const [citiesLoaded, setCitiesLoaded] = useState(false);
 
   const {
     data: getCitiesResponse,
@@ -24,19 +24,14 @@ export default function TabLayout() {
     //    refetch,
   } = useGetCities();
 
-  const [isFirstTime] = useIsFirstTime();
-  const hideSplash = useCallback(async () => {
-    await SplashScreen.hideAsync();
-  }, []);
-
   useEffect(() => {
     if (storedCities && storedCities.length > 0) {
       // hide splash if cities already present in storage
       setCitiesLoaded(true);
-      hideSplash();
+      SplashScreen.hideAsync();
     } else if (!isLoadingGetCities || errorGetCities) {
       // else fetch cities and hide when loaded or error occurs
-      hideSplash();
+      SplashScreen.hideAsync();
     }
 
     if (errorGetCities === null && getCitiesResponse?.status?.success) {
@@ -49,13 +44,7 @@ export default function TabLayout() {
     //     hideSplash();
     //   }, 1000);
     // }
-  }, [
-    hideSplash,
-    isLoadingGetCities,
-    errorGetCities,
-    storedCities,
-    getCitiesResponse,
-  ]);
+  }, [isLoadingGetCities, errorGetCities, storedCities, getCitiesResponse]);
 
   if (!citiesLoaded && errorGetCities) {
     console.log('errorGetCities', errorGetCities);
@@ -66,7 +55,8 @@ export default function TabLayout() {
   if (isFirstTime) {
     return <Redirect href="/onboarding" />;
   }
-  if (status === 'signOut') {
+
+  if (authStatus === 'signOut') {
     return <Redirect href="/auth/login" />;
   }
 

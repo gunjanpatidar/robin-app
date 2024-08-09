@@ -1,6 +1,6 @@
 import { getItem, removeItem, setItem } from '@/core/storage';
 
-const TOKEN = 'token';
+const TOKEN = 'auth.token';
 
 export type TokenType = {
   token: string;

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import type { PickerItemProps, PickerMethods } from 'react-native-ui-lib';
 import {
   Avatar,
@@ -35,45 +35,22 @@ export default function Feed() {
     : [];
 
   const selectedCity = getItem<City>('global.selectedCity');
-  console.log('selectedCity', selectedCity);
-
   const citiesPickerRef = React.createRef<PickerMethods>();
-  if (selectedCity === null && cities && cities.length) {
-    setTimeout(() => {
-      citiesPickerRef.current?.openExpandable();
-    }, 100);
-  } else if (selectedCity.city_id !== state.selectedCity?.city_id) {
-    setState({ ...state, selectedCity });
-  }
+  console.log('selectedCity', selectedCity);
+  console.log('cities count', cities?.length);
 
-  const {
-    data: getUpcomingEventsResponse,
-    // isLoading: isLoadingGetUpcomingEvents,
-    // error: errorGetEvent,
-    //    refetch,
-  } = useGetUpcomingEvents({
-    city_id: selectedCity.city_id,
-    offset: 0,
-    limit: 5,
-    user_location: {
-      latitude: 0,
-      longitude: 0,
-    },
-  });
+  useEffect(() => {
+    if (selectedCity === null && cities?.length) {
+      setTimeout(() => {
+        citiesPickerRef.current?.openExpandable();
+      }, 100);
+    }
 
-  // const { data, isPending, isError } = usePosts();
-  // const renderItem = React.useCallback(
-  //   ({ item }: { item: Post }) => <Card {...item} />,
-  //   []
-  // );
+    // if (selectedCity?.city_id !== state.selectedCity?.city_id) {
+    //   setState({ ...state, selectedCity });
+    // }
+  }, [selectedCity, cities?.length, citiesPickerRef]);
 
-  // if (isError) {
-  //   return (
-  //     <View>
-  //       <Text> Error Loading data </Text>
-  //     </View>
-  //   );
-  // }
   return (
     <>
       <View
@@ -155,44 +132,16 @@ export default function Feed() {
           Welcome Robin!
         </RHA.Type.H1>
 
-        <Text
-          style={{
-            marginVertical: 20,
-            marginHorizontal: 20,
-            fontSize: 16,
-            color: Colors.grey_2,
-            textTransform: 'uppercase',
-          }}
-        >
-          Upcomings events in {selectedCity ? selectedCity.name : 'your city'}
-        </Text>
-        <Carousel
-          pageControlProps={{
-            size: 6,
-            containerStyle: { position: 'relative', top: -10 },
-          }}
-          pageControlPosition={Carousel.pageControlPositions.OVER}
-          // showCounter
-          animated
-        >
-          {getUpcomingEventsResponse?.events.map((e: Event, i) => (
-            <RHA.UI.Card
-              key={i}
-              event={e}
-              containerStyle={{ marginHorizontal: 20, marginBottom: 20 }}
-            />
-          ))}
-        </Carousel>
+        {selectedCity && (
+          <View>
+            <Text style={styles.h2}>
+              Upcomings events in {selectedCity.name}
+            </Text>
+            <UpcomingEvents selectedCity={selectedCity} />
+          </View>
+        )}
 
-        <Text
-          style={{
-            marginVertical: 20,
-            marginHorizontal: 20,
-            fontSize: 16,
-            color: Colors.grey_2,
-            textTransform: 'uppercase',
-          }}
-        >
+        <Text style={styles.h2}>
           Latest activity in {selectedCity ? selectedCity.name : 'your city'}
         </Text>
 
@@ -251,3 +200,50 @@ export default function Feed() {
     </>
   );
 }
+
+function UpcomingEvents({ selectedCity }: { selectedCity: City }) {
+  const {
+    data: getUpcomingEventsResponse,
+    // isLoading: isLoadingGetUpcomingEvents,
+    // error: errorGetEvent,
+    //    refetch,
+  } = useGetUpcomingEvents({
+    city_id: selectedCity?.city_id,
+    offset: 0,
+    limit: 5,
+    user_location: {
+      latitude: 0,
+      longitude: 0,
+    },
+  });
+
+  return (
+    <Carousel
+      pageControlProps={{
+        size: 6,
+        containerStyle: { position: 'relative', top: -10 },
+      }}
+      pageControlPosition={Carousel.pageControlPositions.OVER}
+      // showCounter
+      animated
+    >
+      {getUpcomingEventsResponse?.events.map((e: Event, i: number) => (
+        <RHA.UI.Card
+          key={i}
+          event={e}
+          containerStyle={{ marginHorizontal: 20, marginBottom: 20 }}
+        />
+      ))}
+    </Carousel>
+  );
+}
+
+const styles = StyleSheet.create({
+  h2: {
+    marginVertical: 20,
+    marginHorizontal: 20,
+    fontSize: 16,
+    color: Colors.grey_2,
+    textTransform: 'uppercase',
+  },
+});

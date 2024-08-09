@@ -11,7 +11,10 @@ export const client = axios.create({
 // Add authorization header to all requests
 client.interceptors.request.use(
   (request) => {
-    request.headers.Authorization = `Bearer ${getToken().token}`;
+    const auth = getToken();
+    if (auth?.token) {
+      request.headers.Authorization = `Bearer ${auth.token}`;
+    }
 
     console.log('[API CLIENT] Request: ', JSON.stringify(request, null, 2));
     return request;
@@ -25,7 +28,10 @@ client.interceptors.request.use(
 // Response interceptor to log API responses
 client.interceptors.response.use(
   (response) => {
-    console.log('[API CLIENT] Response: ', response.data);
+    console.log(
+      '[API CLIENT] Response: ',
+      JSON.stringify(response.data, null, 2)
+    );
     return response;
   },
   (error) => {

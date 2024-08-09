@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { Link, router, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 import { Button, Colors, Incubator, Text, View } from 'react-native-ui-lib';
 
 import FacebookLogo from '@/../assets/icons/facebook_logo.svg';
@@ -37,22 +37,21 @@ export default function LoginScreen() {
   } = useLogin();
 
   const onSubmit = () => {
+    Keyboard.dismiss();
     login(state);
   };
 
   useEffect(() => {
-    let msg = loginResponse?.status.message;
-
     if (errorLogin) {
-      console.log('error:', errorLogin, msg);
-
       setToast({
         visible: true,
-        message: msg || 'Something went wrong, please try again',
+        message:
+          errorLogin?.response?.data?.status?.message ||
+          'Something went wrong, please try again',
         type: 'failure',
       });
     }
-  }, [errorLogin, loginResponse]);
+  }, [errorLogin]);
 
   useEffect(() => {
     if (loginResponse) {
@@ -102,7 +101,7 @@ export default function LoginScreen() {
       <RHA.UI.Overlay
         visible={isLoginRequestPending}
         type="loading"
-        message={'Signin up...'}
+        message={'Logging in...'}
         messageStyle={{ color: Colors.white }}
         containerStyle={{ backgroundColor: Colors.rgba(Colors.grey_3, 0.9) }}
       />
